@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from datapilot.csv_store import CsvStore, validate_source_name
 from datapilot.harness import AgentHarness
-from datapilot.llm import OpenRouterLLM
+from datapilot.llm import MockLLM, OpenRouterLLM
 from datapilot.trace import TraceEntry
 
 load_dotenv()
@@ -160,9 +160,9 @@ def create_app(*, preload_examples: bool = True) -> FastAPI:
     @app.get("/api/config", response_model=ConfigResponse)
     def config() -> ConfigResponse:
         return ConfigResponse(
-            default_provider="openrouter",
-            providers=["openrouter"],
-            default_model=OpenRouterLLM().model,
+            default_provider="mock",
+            providers=["mock", "openrouter"],
+            default_model="mock-agent",
             api_mode="in-memory",
         )
 
@@ -228,7 +228,9 @@ def create_app(*, preload_examples: bool = True) -> FastAPI:
     return app
 
 
-def build_llm(provider: str) -> OpenRouterLLM:
+def build_llm(provider: str) -> MockLLM | OpenRouterLLM:
+    if provider == "mock":
+        return MockLLM()
     if provider == "openrouter":
         return OpenRouterLLM()
     raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
