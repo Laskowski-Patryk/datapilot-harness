@@ -9,7 +9,7 @@ import httpx
 from datapilot.schemas import AgentAction
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = "openai/gpt-4o-mini"
+DEFAULT_MODEL = "deepseek/deepseek-v4-flash"
 
 
 class OpenRouterLLM:

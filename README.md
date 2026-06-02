@@ -45,7 +45,7 @@ Create a `.env` file when using OpenRouter through the CLI:
 
 ```env
 OPENROUTER_API_KEY=sk-or-xxx
-OPENROUTER_MODEL=openai/gpt-4o-mini
+OPENROUTER_MODEL=deepseek/deepseek-v4-flash
 ```
 
 Run a one-shot question:
