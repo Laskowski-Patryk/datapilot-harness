@@ -10,6 +10,7 @@ class TraceEntry:
     action: str
     reason: str
     observation: dict[str, Any]
+    duration_ms: int | None = None
     error: str | None = None
     executed_sql: str | None = None
     row_count: int | None = None
@@ -25,6 +26,7 @@ class TraceRecorder:
         action: str,
         reason: str,
         observation: dict[str, Any],
+        duration_ms: int | None = None,
     ) -> None:
         data = observation.get("data", {})
         error = data.get("error") if not observation.get("ok", False) else None
@@ -34,6 +36,7 @@ class TraceRecorder:
                 action=action,
                 reason=reason,
                 observation=observation,
+                duration_ms=duration_ms,
                 error=error,
                 executed_sql=data.get("executed_sql"),
                 row_count=data.get("row_count"),

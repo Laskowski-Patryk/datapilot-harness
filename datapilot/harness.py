@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 
@@ -70,12 +71,15 @@ class AgentHarness:
                 continue
 
             self.messages.append({"role": "assistant", "content": raw_content})
+            started_at = time.perf_counter()
             observation = self._execute_action(action)
+            duration_ms = int((time.perf_counter() - started_at) * 1000)
             self.trace.add(
                 step=step,
                 action=action.action,
                 reason=action.reason,
                 observation=observation,
+                duration_ms=duration_ms,
             )
             self.messages.append({"role": "user", "content": self._dump_json(observation)})
 
