@@ -39,6 +39,31 @@ Open the Vite URL, usually `http://localhost:5173`.
 
 Mock mode is the default and does not require an API key. OpenRouter mode is still available through the backend when `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are set in the environment.
 
+## Demo Script
+
+Use this flow to understand the project quickly:
+
+1. Start the backend:
+
+   ```bash
+   uv run uvicorn datapilot.api.main:app --reload
+   ```
+
+2. Start the frontend:
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. Open the workbench at `http://localhost:5173`.
+4. Use the bundled `sales` source loaded by the API.
+5. Click `Which customers generated the most revenue?`.
+6. Press `Run`.
+7. Inspect the generated SQL in the center panel.
+8. Inspect the agent trace on the right to see `update_plan`, `inspect_schema`, `profile_data`, `query_csv`, and `finish`.
+
 ## CLI Mode
 
 Create a `.env` file when using OpenRouter through the CLI:
