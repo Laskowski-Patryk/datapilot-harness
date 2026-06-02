@@ -2,7 +2,7 @@
 
 `datapilot-harness` is a small Codex-style agent runtime for retrieving and analyzing tabular data from CSV files through DuckDB.
 
-This is not a CSV chatbot. The agent does not answer immediately. It plans, chooses a structured action, executes a safe Python tool, reads the observation, repairs mistakes when needed, and only finishes when it has enough evidence.
+This is not a CSV chatbot. The agent does not answer immediately. It plans, chooses a structured action, executes a safe Python tool, reads the observation, repairs mistakes when needed, and only finishes when it has enough evidence. In interactive mode, the same harness session stays alive so users can ask follow-up questions without losing the previous trace, queries, observations, or answers.
 
 The project is intentionally compact, typed, and easy to inspect. It is designed as a portfolio-grade demo of how an agent harness can be built without LangChain, LlamaIndex, LangGraph, embeddings, vector databases, or a web UI.
 
@@ -15,6 +15,7 @@ Modern data agents need more than a prompt wrapped around a file upload. They ne
 - SQL validation before execution
 - safe table allow-listing
 - recovery from broken queries
+- multi-turn follow-up questions with retained context
 - clear separation between planning, tool execution, and final answers
 
 `datapilot-harness` demonstrates those ideas in a focused MVP.
@@ -72,6 +73,20 @@ OPENROUTER_MODEL=openai/gpt-4o-mini
 uv run python -m datapilot "Which customers generated the most revenue, and is there a monthly growth trend?" --csv sales=examples/sales.csv
 ```
 
+For a continued conversation, use interactive mode:
+
+```bash
+uv run python -m datapilot "Which customers generated the most revenue?" --csv sales=examples/sales.csv --interactive
+```
+
+Then ask follow-ups in the same session:
+
+```text
+Follow-up: Break that down by product line.
+Follow-up: Which at-risk accounts should I inspect first?
+Follow-up: What query did you use for the trend?
+```
+
 You can register multiple CSV sources:
 
 ```bash
@@ -101,7 +116,7 @@ Step 5: query_csv
 Step 6: finish
 ```
 
-The CLI prints the latest plan, a step-by-step trace through `rich.Panel`, and the final answer.
+The CLI prints the latest plan, a step-by-step trace through `rich.Panel`, and the final answer. In interactive mode, each follow-up prints only the new trace entries for that turn while the agent still retains the full session context internally.
 
 ## Safety
 

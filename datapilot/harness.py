@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from datapilot.csv_store import CsvStore
 from datapilot.prompts import SYSTEM_PROMPT
 from datapilot.schemas import AgentAction
-from datapilot.trace import TraceRecorder
+from datapilot.trace import TraceEntry, TraceRecorder
 
 
 class LLMClient(Protocol):
@@ -23,6 +23,7 @@ class AgentResult:
     answer: str
     plan: list[str]
     trace: TraceRecorder
+    new_entries: list[TraceEntry]
 
 
 class AgentHarness:
@@ -34,12 +35,20 @@ class AgentHarness:
         self.current_plan: list[str] = []
         self.has_successful_query_result = False
         self.last_error = ""
+        self.messages: list[dict[str, str]] = [{"role": "system", "content": SYSTEM_PROMPT}]
+        self.turn_count = 0
 
     def run(self, question: str) -> AgentResult:
-        messages = self._initial_messages(question)
+        return self.ask(question)
 
-        for step in range(1, self.max_steps + 1):
-            raw_content = self.llm.complete(messages)
+    def ask(self, question: str) -> AgentResult:
+        self.turn_count += 1
+        trace_start = len(self.trace.entries)
+        self.messages.append({"role": "user", "content": self._dump_json(self._question_payload(question))})
+
+        for _ in range(self.max_steps):
+            step = len(self.trace.entries) + 1
+            raw_content = self.llm.complete(self.messages)
             action = self._parse_action(raw_content)
 
             if action is None:
@@ -56,11 +65,11 @@ class AgentHarness:
                     reason="Invalid LLM output.",
                     observation=observation,
                 )
-                messages.append({"role": "assistant", "content": raw_content})
-                messages.append({"role": "user", "content": self._dump_json(observation)})
+                self.messages.append({"role": "assistant", "content": raw_content})
+                self.messages.append({"role": "user", "content": self._dump_json(observation)})
                 continue
 
-            messages.append({"role": "assistant", "content": raw_content})
+            self.messages.append({"role": "assistant", "content": raw_content})
             observation = self._execute_action(action)
             self.trace.add(
                 step=step,
@@ -68,6 +77,7 @@ class AgentHarness:
                 reason=action.reason,
                 observation=observation,
             )
+            self.messages.append({"role": "user", "content": self._dump_json(observation)})
 
             if action.action == "finish" and observation["ok"]:
                 return AgentResult(
@@ -75,21 +85,26 @@ class AgentHarness:
                     answer=action.answer,
                     plan=self.current_plan,
                     trace=self.trace,
+                    new_entries=self.trace.entries[trace_start:],
                 )
-
-            messages.append({"role": "user", "content": self._dump_json(observation)})
 
         return AgentResult(
             completed=False,
             answer=f"The agent did not finish within the {self.max_steps}-step limit.",
             plan=self.current_plan,
             trace=self.trace,
+            new_entries=self.trace.entries[trace_start:],
         )
 
-    def _initial_messages(self, question: str) -> list[dict[str, str]]:
-        user_payload = {
-            "question": question,
+    def _question_payload(self, question: str) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "turn": self.turn_count,
             "available_sources": sorted(self.store.allowed_tables),
+            "conversation_context": {
+                "current_plan": self.current_plan,
+                "has_successful_query_result": self.has_successful_query_result,
+                "last_error": self.last_error,
+            },
             "constraints": {
                 "max_steps": self.max_steps,
                 "sql_dialect": "duckdb",
@@ -97,10 +112,11 @@ class AgentHarness:
                 "row_limit": 50,
             },
         }
-        return [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": self._dump_json(user_payload)},
-        ]
+        if self.turn_count == 1:
+            payload["question"] = question
+        else:
+            payload["follow_up_question"] = question
+        return payload
 
     def _parse_action(self, raw_content: str) -> AgentAction | None:
         try:
