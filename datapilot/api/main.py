@@ -63,6 +63,7 @@ class RunRequest(BaseModel):
 
 class RunResponse(BaseModel):
     run_id: str
+    completed: bool
     provider: str
     model: str
     question: str
@@ -203,6 +204,7 @@ def create_app(*, preload_examples: bool = True) -> FastAPI:
         run_id = uuid.uuid4().hex
         response = RunResponse(
             run_id=run_id,
+            completed=result.completed,
             provider=provider,
             model=getattr(llm, "model", "unknown"),
             question=request.question,

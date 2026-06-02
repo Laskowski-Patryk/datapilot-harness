@@ -6,9 +6,9 @@ interface SchemaTableProps {
 
 export function SchemaTable({ schema }: SchemaTableProps) {
   return (
-    <section className="min-h-0">
+    <section className="flex h-full min-h-0 flex-col">
       <h3 className="mb-2 text-xs font-semibold uppercase text-muted">Schema</h3>
-      <div className="max-h-64 max-w-full overflow-auto rounded-md border border-line">
+      <div className="min-h-0 max-w-full flex-1 overflow-auto rounded-md border border-line">
         <table className="w-full border-collapse text-left text-xs">
           <thead className="sticky top-0 bg-slate-50 text-muted">
             <tr>

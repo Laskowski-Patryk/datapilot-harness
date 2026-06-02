@@ -6,7 +6,7 @@ interface TraceDetailsProps {
 
 export function TraceDetails({ step }: TraceDetailsProps) {
   return (
-    <section className="min-h-0 flex-1 rounded-lg border border-line bg-card p-4 shadow-panel">
+    <section className="flex min-h-0 flex-1 flex-col rounded-lg border border-line bg-card p-4 shadow-panel">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-ink">Step Details</h2>
@@ -22,7 +22,7 @@ export function TraceDetails({ step }: TraceDetailsProps) {
           {step.status}
         </span>
       </div>
-      <div className="space-y-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-auto pr-1">
         <div>
           <div className="text-xs font-semibold uppercase text-muted">Reason</div>
           <p className="mt-2 text-sm leading-6 text-ink">{step.reason}</p>

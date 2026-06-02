@@ -103,6 +103,7 @@ const query =
 
 export const staticRun: RunResponse = {
   run_id: "static-demo",
+  completed: true,
   provider: "mock",
   model: "mock-agent",
   question: samplePrompts[0],

@@ -24,7 +24,7 @@ export function DataSourcePanel({
   const profileColumns = selectedSource?.profile?.columns.slice(0, 5) ?? [];
 
   return (
-    <div className="flex h-full min-h-[640px] w-full min-w-0 max-w-full flex-col gap-4 overflow-hidden rounded-lg border border-line bg-card p-4 shadow-panel">
+    <div className="flex h-full min-h-[640px] w-full min-w-0 max-w-full flex-col gap-4 overflow-hidden rounded-lg border border-line bg-card p-4 shadow-panel lg:min-h-0">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-ink">Data Sources</h2>
@@ -86,11 +86,13 @@ export function DataSourcePanel({
             </div>
           </div>
 
-          <SchemaTable schema={selectedSource.schema} />
+          <div className="min-h-0 flex-[1.25]">
+            <SchemaTable schema={selectedSource.schema} />
+          </div>
 
-          <section className="min-h-0">
+          <section className="flex min-h-0 flex-1 flex-col">
             <h3 className="mb-2 text-xs font-semibold uppercase text-muted">Profile</h3>
-            <div className="max-h-48 space-y-2 overflow-auto pr-1">
+            <div className="min-h-0 flex-1 space-y-2 overflow-auto pr-1">
               {profileColumns.map((column) => (
                 <div key={column.name} className="min-w-0 rounded-md border border-line bg-white p-3">
                   <div className="flex items-center justify-between gap-2 text-xs">

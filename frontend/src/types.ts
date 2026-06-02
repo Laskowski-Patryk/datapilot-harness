@@ -51,6 +51,7 @@ export interface ResultTableData {
 
 export interface RunResponse {
   run_id: string;
+  completed: boolean;
   provider: ProviderName;
   model: string;
   question: string;

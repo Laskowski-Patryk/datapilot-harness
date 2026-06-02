@@ -8,6 +8,7 @@ import { ErrorBanner } from "./components/ErrorBanner";
 import { HeaderBar } from "./components/HeaderBar";
 import { QuestionBox } from "./components/QuestionBox";
 import { ResultTable } from "./components/ResultTable";
+import { RunStatusBar } from "./components/RunStatusBar";
 import { SamplePrompts } from "./components/SamplePrompts";
 import { SqlViewer } from "./components/SqlViewer";
 import { TraceDetails } from "./components/TraceDetails";
@@ -23,6 +24,13 @@ const fallbackConfig: ConfigResponse = {
   api_mode: "static-demo",
 };
 
+async function waitForMinimumRun(startedAt: number, minimumMs = 650) {
+  const elapsed = performance.now() - startedAt;
+  if (elapsed < minimumMs) {
+    await new Promise((resolve) => window.setTimeout(resolve, minimumMs - elapsed));
+  }
+}
+
 export default function App() {
   const [sources, setSources] = useState<SourceSummary[]>([staticSource]);
   const [selectedSourceName, setSelectedSourceName] = useState(staticSource.source);
@@ -33,6 +41,9 @@ export default function App() {
   const [config, setConfig] = useState<ConfigResponse>(fallbackConfig);
   const [apiAvailable, setApiAvailable] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [runState, setRunState] = useState<"idle" | "running" | "completed" | "error">(
+    "completed",
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,8 +55,10 @@ export default function App() {
         setProvider(nextConfig.default_provider);
         setApiAvailable(true);
         if (nextSources.length > 0) {
+          const preferredSource =
+            nextSources.find((source) => source.source === "sales") ?? nextSources[0];
           setSources(nextSources);
-          setSelectedSourceName(nextSources[0].source);
+          setSelectedSourceName(preferredSource.source);
         }
       } catch {
         setApiAvailable(false);
@@ -67,7 +80,9 @@ export default function App() {
       return;
     }
     setError(null);
+    setRunState("running");
     setIsRunning(true);
+    const startedAt = performance.now();
     try {
       if (!apiAvailable) {
         const demoRun = {
@@ -76,8 +91,10 @@ export default function App() {
           run_id: `static-${Date.now()}`,
           provider,
         };
+        await waitForMinimumRun(startedAt);
         setRun(demoRun);
         setSelectedStep(demoRun.trace[demoRun.trace.length - 2] ?? demoRun.trace[0]);
+        setRunState("completed");
         return;
       }
       const response = await createRun({
@@ -85,10 +102,14 @@ export default function App() {
         sources: selectedSource ? [selectedSource.source] : [],
         provider,
       });
+      await waitForMinimumRun(startedAt);
       setRun(response);
       setSelectedStep(response.trace[response.trace.length - 2] ?? response.trace[0]);
+      setRunState(response.completed ? "completed" : "error");
     } catch (runError) {
+      await waitForMinimumRun(startedAt);
       setError(runError instanceof Error ? runError.message : "Run failed.");
+      setRunState("error");
     } finally {
       setIsRunning(false);
     }
@@ -121,7 +142,7 @@ export default function App() {
         />
       }
       center={
-        <main className="flex min-h-0 flex-1 flex-col gap-4">
+        <main className="flex min-h-0 flex-1 flex-col gap-4 lg:pb-4">
           <HeaderBar
             config={config}
             apiAvailable={apiAvailable}
@@ -144,6 +165,7 @@ export default function App() {
             activePrompt={question}
             onSelectPrompt={setQuestion}
           />
+          <RunStatusBar state={runState} provider={provider} run={run} />
           <AnswerCard answer={run.answer} plan={run.plan} model={run.model} />
           {run.result_tables[0] ? (
             <ResultTable table={run.result_tables[0]} />
@@ -154,7 +176,7 @@ export default function App() {
         </main>
       }
       right={
-        <aside className="flex min-h-0 flex-col gap-4">
+        <aside className="flex h-full min-h-0 flex-col gap-4">
           <TraceTimeline
             steps={run.trace}
             selectedStep={selectedStep}

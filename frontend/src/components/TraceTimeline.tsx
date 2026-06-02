@@ -11,14 +11,14 @@ interface TraceTimelineProps {
 
 export function TraceTimeline({ steps, selectedStep, onSelectStep }: TraceTimelineProps) {
   return (
-    <section className="min-h-0 rounded-lg border border-line bg-card p-4 shadow-panel">
+    <section className="flex min-h-0 flex-[1.05] flex-col rounded-lg border border-line bg-card p-4 shadow-panel">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-ink">Agent Trace</h2>
         <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-muted">
           {steps.length} steps
         </span>
       </div>
-      <div className="max-h-[400px] space-y-2 overflow-auto pr-1">
+      <div className="min-h-0 flex-1 space-y-2 overflow-auto pr-1">
         {steps.map((step) => {
           const active = selectedStep.step === step.step;
           return (

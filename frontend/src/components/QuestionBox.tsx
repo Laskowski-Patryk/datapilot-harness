@@ -1,4 +1,4 @@
-import { Play } from "lucide-react";
+import { Loader2, Play } from "lucide-react";
 
 import type { ProviderName } from "../types";
 
@@ -49,13 +49,17 @@ export function QuestionBox({
             ))}
           </select>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:bg-primary disabled:opacity-80"
             disabled={isRunning}
             onClick={onRun}
             type="button"
           >
-            <Play className="h-4 w-4" />
-            {isRunning ? "Running" : "Run"}
+            {isRunning ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+            {isRunning ? "Running analysis" : "Run"}
           </button>
         </div>
       </div>
