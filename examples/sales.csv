@@ -1,13 +1,31 @@
-order_date,customer,region,revenue
-2025-01-05,ACME,EU,1200
-2025-01-12,Bosch,EU,2200
-2025-02-01,ACME,EU,1800
-2025-02-12,Delta,US,900
-2025-03-03,Bosch,EU,3100
-2025-03-20,Delta,US,1400
-2025-04-05,ACME,EU,2100
-2025-04-10,Bosch,EU,2800
-2025-04-21,Delta,US,1100
-2025-05-01,ACME,EU,1700
-2025-05-13,Bosch,EU,3500
-2025-05-18,Delta,US,1600
+order_id,order_date,customer,account_tier,industry,region,country,product_line,plan,channel,seats,contract_months,discount_pct,revenue,renewal_status
+ORD-2025-0001,2025-01-03,Northstar Analytics,Enterprise,Software,North America,United States,DataPilot Cloud,Enterprise,Direct,145,12,0.06,18450,renewed
+ORD-2025-0002,2025-01-07,Apex Manufacturing,Mid-Market,Manufacturing,Europe,Germany,DataPilot Cloud,Professional,Partner,72,12,0.08,8640,renewed
+ORD-2025-0003,2025-01-12,Vertex Health,Enterprise,Healthcare,North America,United States,DataPilot Govern,Enterprise,Direct,118,24,0.11,18880,renewed
+ORD-2025-0004,2025-01-18,Summit Retail Group,Mid-Market,Retail,Europe,United Kingdom,DataPilot Insights,Professional,Direct,64,12,0.04,7040,at_risk
+ORD-2025-0005,2025-01-25,Brightline Logistics,SMB,Logistics,North America,Canada,DataPilot Cloud,Starter,Self-Serve,28,12,0.00,2520,renewed
+ORD-2025-0006,2025-02-04,Nimbus Finance,Enterprise,Financial Services,Europe,Netherlands,DataPilot Govern,Enterprise,Direct,132,24,0.10,22440,renewed
+ORD-2025-0007,2025-02-09,Helio Energy,Mid-Market,Energy,Europe,Spain,DataPilot Insights,Professional,Partner,58,12,0.05,6670,renewed
+ORD-2025-0008,2025-02-13,Cobalt Systems,SMB,Technology,Asia Pacific,Singapore,DataPilot Cloud,Starter,Self-Serve,34,12,0.00,3060,churned
+ORD-2025-0009,2025-02-19,Northstar Analytics,Enterprise,Software,North America,United States,DataPilot Insights,Enterprise,Direct,145,12,0.07,15950,renewed
+ORD-2025-0010,2025-02-24,Apex Manufacturing,Mid-Market,Manufacturing,Europe,Germany,DataPilot Govern,Professional,Partner,72,12,0.09,10080,renewed
+ORD-2025-0011,2025-03-02,Vertex Health,Enterprise,Healthcare,North America,United States,DataPilot Cloud,Enterprise,Direct,126,24,0.10,20160,renewed
+ORD-2025-0012,2025-03-08,Summit Retail Group,Mid-Market,Retail,Europe,United Kingdom,DataPilot Cloud,Professional,Direct,70,12,0.05,8050,at_risk
+ORD-2025-0013,2025-03-14,Brightline Logistics,SMB,Logistics,North America,Canada,DataPilot Insights,Starter,Self-Serve,31,12,0.00,2945,renewed
+ORD-2025-0014,2025-03-20,Nimbus Finance,Enterprise,Financial Services,Europe,Netherlands,DataPilot Cloud,Enterprise,Direct,138,24,0.08,23460,renewed
+ORD-2025-0015,2025-03-27,Helio Energy,Mid-Market,Energy,Europe,Spain,DataPilot Govern,Professional,Partner,61,12,0.06,7930,renewed
+ORD-2025-0016,2025-04-03,Cobalt Systems,SMB,Technology,Asia Pacific,Singapore,DataPilot Insights,Starter,Self-Serve,30,12,0.00,2850,churned
+ORD-2025-0017,2025-04-09,Northstar Analytics,Enterprise,Software,North America,United States,DataPilot Govern,Enterprise,Direct,153,12,0.06,24480,renewed
+ORD-2025-0018,2025-04-14,Apex Manufacturing,Mid-Market,Manufacturing,Europe,Germany,DataPilot Cloud,Professional,Partner,78,12,0.07,9360,renewed
+ORD-2025-0019,2025-04-19,Vertex Health,Enterprise,Healthcare,North America,United States,DataPilot Insights,Enterprise,Direct,126,24,0.09,17010,renewed
+ORD-2025-0020,2025-04-24,Summit Retail Group,Mid-Market,Retail,Europe,United Kingdom,DataPilot Govern,Professional,Direct,70,12,0.06,8750,at_risk
+ORD-2025-0021,2025-05-02,Brightline Logistics,SMB,Logistics,North America,Canada,DataPilot Cloud,Starter,Self-Serve,36,12,0.00,3240,renewed
+ORD-2025-0022,2025-05-07,Nimbus Finance,Enterprise,Financial Services,Europe,Netherlands,DataPilot Insights,Enterprise,Direct,144,24,0.07,19440,renewed
+ORD-2025-0023,2025-05-13,Helio Energy,Mid-Market,Energy,Europe,Spain,DataPilot Cloud,Professional,Partner,64,12,0.05,7680,renewed
+ORD-2025-0024,2025-05-19,Cobalt Systems,SMB,Technology,Asia Pacific,Singapore,DataPilot Cloud,Starter,Self-Serve,24,12,0.00,2160,churned
+ORD-2025-0025,2025-05-25,Northstar Analytics,Enterprise,Software,North America,United States,DataPilot Cloud,Enterprise,Direct,160,12,0.05,25600,renewed
+ORD-2025-0026,2025-06-01,Apex Manufacturing,Mid-Market,Manufacturing,Europe,Germany,DataPilot Insights,Professional,Partner,82,12,0.06,9020,renewed
+ORD-2025-0027,2025-06-06,Vertex Health,Enterprise,Healthcare,North America,United States,DataPilot Govern,Enterprise,Direct,132,24,0.08,21120,renewed
+ORD-2025-0028,2025-06-11,Summit Retail Group,Mid-Market,Retail,Europe,United Kingdom,DataPilot Insights,Professional,Direct,68,12,0.08,7480,at_risk
+ORD-2025-0029,2025-06-17,Brightline Logistics,SMB,Logistics,North America,Canada,DataPilot Govern,Starter,Self-Serve,38,12,0.00,3990,renewed
+ORD-2025-0030,2025-06-23,Nimbus Finance,Enterprise,Financial Services,Europe,Netherlands,DataPilot Govern,Enterprise,Direct,150,24,0.06,25500,renewed

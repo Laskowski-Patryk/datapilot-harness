@@ -81,7 +81,7 @@ class AgentHarness:
 
         return AgentResult(
             completed=False,
-            answer=f"Agent nie zakonczyl pracy w limicie {self.max_steps} krokow.",
+            answer=f"The agent did not finish within the {self.max_steps}-step limit.",
             plan=self.current_plan,
             trace=self.trace,
         )

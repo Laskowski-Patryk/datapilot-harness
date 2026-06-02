@@ -30,7 +30,7 @@ class AgentAction(BaseModel):
     )
 
     answer: str = Field(
-        description="Final answer in Polish. Empty unless action=finish.",
+        description="Final answer in English. Empty unless action=finish.",
     )
 
     reason: str = Field(
