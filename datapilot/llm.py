@@ -11,6 +11,7 @@ from datapilot.schemas import AgentAction
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "deepseek/deepseek-v4-flash"
+DEFAULT_MOCK_PROCESSING_DELAY_MS = 2500
 
 
 class OpenRouterLLM:
@@ -77,7 +78,7 @@ class MockLLM:
         self.processing_delay_ms = (
             processing_delay_ms
             if processing_delay_ms is not None
-            else int(os.getenv("DATAPILOT_MOCK_DELAY_MS", "450"))
+            else int(os.getenv("DATAPILOT_MOCK_DELAY_MS", str(DEFAULT_MOCK_PROCESSING_DELAY_MS)))
         )
 
     def complete(self, messages: list[dict[str, str]]) -> str:

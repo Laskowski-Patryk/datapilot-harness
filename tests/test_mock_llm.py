@@ -8,7 +8,7 @@ from datapilot.llm import MockLLM
 def test_mock_llm_runs_demo_sales_flow() -> None:
     store = CsvStore()
     store.add_csv("sales", "examples/sales.csv")
-    harness = AgentHarness(llm=MockLLM(), store=store)
+    harness = AgentHarness(llm=MockLLM(processing_delay_ms=0), store=store)
 
     result = harness.ask("Which customers generated the most revenue?")
 

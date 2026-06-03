@@ -16,7 +16,8 @@ def test_api_health() -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_api_mock_run_with_example_sales_source() -> None:
+def test_api_mock_run_with_example_sales_source(monkeypatch) -> None:
+    monkeypatch.setenv("DATAPILOT_MOCK_DELAY_MS", "0")
     client = TestClient(create_app(preload_examples=True))
 
     response = client.post(
@@ -44,7 +45,8 @@ def test_api_mock_run_with_example_sales_source() -> None:
     assert data["result_tables"][0]["rows"][0]["customer"] == "Nimbus Finance"
 
 
-def test_api_mock_run_stream_with_example_sales_source() -> None:
+def test_api_mock_run_stream_with_example_sales_source(monkeypatch) -> None:
+    monkeypatch.setenv("DATAPILOT_MOCK_DELAY_MS", "0")
     client = TestClient(create_app(preload_examples=True))
 
     with client.stream(
