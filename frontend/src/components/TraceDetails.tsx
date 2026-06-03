@@ -1,10 +1,31 @@
 import type { TraceStep } from "../types";
 
 interface TraceDetailsProps {
-  step: TraceStep;
+  step: TraceStep | null;
+}
+
+function statusClass(status: TraceStep["status"]) {
+  if (status === "running") {
+    return "bg-blue-50 text-primary";
+  }
+  if (status === "success") {
+    return "bg-green-50 text-success";
+  }
+  return "bg-red-50 text-danger";
 }
 
 export function TraceDetails({ step }: TraceDetailsProps) {
+  if (!step) {
+    return (
+      <section className="flex min-h-0 flex-1 flex-col rounded-lg border border-line bg-card p-4 shadow-panel">
+        <h2 className="text-sm font-semibold text-ink">Step Details</h2>
+        <div className="mt-4 rounded-md border border-dashed border-line bg-slate-50 p-4 text-sm text-muted">
+          Waiting for the next agent step.
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="flex min-h-0 flex-1 flex-col rounded-lg border border-line bg-card p-4 shadow-panel">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -14,11 +35,7 @@ export function TraceDetails({ step }: TraceDetailsProps) {
             {step.step}. {step.action}
           </p>
         </div>
-        <span
-          className={`rounded-md px-2 py-1 text-xs font-medium ${
-            step.status === "success" ? "bg-green-50 text-success" : "bg-red-50 text-danger"
-          }`}
-        >
+        <span className={`rounded-md px-2 py-1 text-xs font-medium ${statusClass(step.status)}`}>
           {step.status}
         </span>
       </div>

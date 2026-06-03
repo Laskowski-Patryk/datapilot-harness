@@ -1,15 +1,41 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useMemo } from "react";
 
 import { formatDuration } from "../lib/format";
 import type { TraceStep } from "../types";
 
 interface TraceTimelineProps {
   steps: TraceStep[];
-  selectedStep: TraceStep;
+  selectedStep: TraceStep | null;
   onSelectStep: (step: TraceStep) => void;
 }
 
+function statusClass(status: TraceStep["status"]) {
+  if (status === "running") {
+    return "bg-blue-50 text-primary";
+  }
+  if (status === "success") {
+    return "bg-green-50 text-success";
+  }
+  return "bg-red-50 text-danger";
+}
+
+function statusIcon(status: TraceStep["status"]) {
+  if (status === "running") {
+    return <Loader2 className="h-3.5 w-3.5 animate-spin" />;
+  }
+  if (status === "success") {
+    return <CheckCircle2 className="h-3.5 w-3.5" />;
+  }
+  return <AlertCircle className="h-3.5 w-3.5" />;
+}
+
 export function TraceTimeline({ steps, selectedStep, onSelectStep }: TraceTimelineProps) {
+  const orderedSteps = useMemo(
+    () => [...steps].sort((first, second) => second.step - first.step),
+    [steps],
+  );
+
   return (
     <section className="flex min-h-0 flex-[1.05] flex-col rounded-lg border border-line bg-card p-4 shadow-panel">
       <div className="mb-3 flex items-center justify-between">
@@ -19,14 +45,14 @@ export function TraceTimeline({ steps, selectedStep, onSelectStep }: TraceTimeli
         </span>
       </div>
       <div className="min-h-0 flex-1 space-y-2 overflow-auto pr-1">
-        {steps.map((step) => {
-          const active = selectedStep.step === step.step;
+        {orderedSteps.map((step) => {
+          const active = selectedStep?.step === step.step;
           return (
             <button
               key={`${step.step}-${step.action}`}
-              className={`w-full rounded-md border p-3 text-left transition ${
+              className={`trace-step-card relative w-full overflow-hidden rounded-md border p-3 text-left transition ${
                 active ? "border-primary bg-blue-50" : "border-line bg-white hover:border-slate-300"
-              }`}
+              } ${step.status === "running" ? "trace-step-card-running" : ""}`}
               onClick={() => onSelectStep(step)}
               type="button"
             >
@@ -44,17 +70,11 @@ export function TraceTimeline({ steps, selectedStep, onSelectStep }: TraceTimeli
                       {step.action}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ${
-                        step.status === "success"
-                          ? "bg-green-50 text-success"
-                          : "bg-red-50 text-danger"
-                      }`}
+                      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs ${statusClass(
+                        step.status,
+                      )}`}
                     >
-                      {step.status === "success" ? (
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                      ) : (
-                        <AlertCircle className="h-3.5 w-3.5" />
-                      )}
+                      {statusIcon(step.status)}
                       {step.status}
                     </span>
                   </div>

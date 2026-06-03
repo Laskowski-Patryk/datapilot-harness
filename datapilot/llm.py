@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from typing import Any
 
 import httpx
@@ -71,10 +72,18 @@ class MockLLM:
 
     model = "mock-agent"
 
-    def __init__(self) -> None:
+    def __init__(self, processing_delay_ms: int | None = None) -> None:
         self.step = 0
+        self.processing_delay_ms = (
+            processing_delay_ms
+            if processing_delay_ms is not None
+            else int(os.getenv("DATAPILOT_MOCK_DELAY_MS", "450"))
+        )
 
     def complete(self, messages: list[dict[str, str]]) -> str:
+        if self.processing_delay_ms > 0:
+            time.sleep(self.processing_delay_ms / 1000)
+
         self.step += 1
         question = self._question_from_messages(messages)
         source = self._source_from_messages(messages)

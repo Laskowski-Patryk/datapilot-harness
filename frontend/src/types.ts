@@ -31,11 +31,13 @@ export interface SourceSummary {
   profile?: SourceProfile;
 }
 
+export type TraceStatus = "running" | "success" | "error";
+
 export interface TraceStep {
   step: number;
   action: string;
   reason: string;
-  status: "success" | "error";
+  status: TraceStatus;
   duration_ms?: number | null;
   executed_sql?: string | null;
   row_count?: number | null;
@@ -61,6 +63,29 @@ export interface RunResponse {
   result_tables: ResultTableData[];
   generated_sql: string[];
   latency_ms: number;
+}
+
+export interface RunStreamEvent {
+  event: "run_started" | "step_started" | "step_finished" | "run_finished" | "error";
+  run_id?: string;
+  provider?: ProviderName;
+  model?: string;
+  question?: string;
+  max_steps?: number;
+  step?: number;
+  action?: string;
+  reason?: string;
+  status?: TraceStatus;
+  duration_ms?: number | null;
+  executed_sql?: string | null;
+  row_count?: number | null;
+  observation?: Record<string, unknown>;
+  error?: string | null;
+  completed?: boolean;
+  answer?: string;
+  plan?: string[];
+  latency_ms?: number;
+  run?: RunResponse;
 }
 
 export interface ConfigResponse {

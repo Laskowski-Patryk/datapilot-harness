@@ -1,4 +1,10 @@
-import type { ConfigResponse, ProviderName, RunResponse, SourceSummary } from "../types";
+import type {
+  ConfigResponse,
+  ProviderName,
+  RunResponse,
+  RunStreamEvent,
+  SourceSummary,
+} from "../types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -47,4 +53,68 @@ export async function createRun(payload: {
     },
     body: JSON.stringify(payload),
   });
+}
+
+export async function createRunStream(
+  payload: {
+    question: string;
+    sources: string[];
+    provider: ProviderName;
+  },
+  onEvent: (event: RunStreamEvent) => void,
+): Promise<RunResponse> {
+  const response = await fetch(`${API_BASE}/api/runs/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Request failed: ${response.status}`);
+  }
+
+  if (!response.body) {
+    return createRun(payload);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finalRun: RunResponse | null = null;
+
+  async function emitLine(line: string) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      return;
+    }
+    const event = JSON.parse(trimmed) as RunStreamEvent;
+    onEvent(event);
+    if (event.run) {
+      finalRun = event.run;
+    }
+  }
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) {
+      await emitLine(line);
+    }
+  }
+
+  buffer += decoder.decode();
+  await emitLine(buffer);
+
+  if (!finalRun) {
+    throw new Error("Streaming run ended without a final response.");
+  }
+  return finalRun;
 }

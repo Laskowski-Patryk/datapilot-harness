@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+import json
 import shutil
 import tempfile
 import time
 import uuid
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from datapilot.csv_store import CsvStore, validate_source_name
@@ -183,12 +186,7 @@ def create_app(*, preload_examples: bool = True) -> FastAPI:
 
     @app.post("/api/runs", response_model=RunResponse)
     def create_run(request: RunRequest) -> RunResponse:
-        sources = request.sources or sorted(state.store.allowed_tables)
-        if not sources:
-            raise HTTPException(status_code=400, detail="Upload or load at least one CSV source.")
-        missing = sorted(set(sources) - state.store.allowed_tables)
-        if missing:
-            raise HTTPException(status_code=400, detail=f"Unknown source(s): {missing}")
+        validate_run_sources(state, request.sources)
 
         provider = request.provider.lower()
         llm = build_llm(provider)
@@ -202,7 +200,7 @@ def create_app(*, preload_examples: bool = True) -> FastAPI:
 
         latency_ms = int((time.perf_counter() - started_at) * 1000)
         run_id = uuid.uuid4().hex
-        response = RunResponse(
+        response = build_run_response(
             run_id=run_id,
             completed=result.completed,
             provider=provider,
@@ -210,15 +208,77 @@ def create_app(*, preload_examples: bool = True) -> FastAPI:
             question=request.question,
             answer=result.answer,
             plan=result.plan,
-            trace=[trace_entry_to_response(entry) for entry in result.new_entries],
-            result_tables=result_tables_from_trace(result.new_entries),
-            generated_sql=[
-                entry.executed_sql for entry in result.new_entries if entry.executed_sql
-            ],
+            entries=result.new_entries,
             latency_ms=latency_ms,
         )
         state.runs[run_id] = response
         return response
+
+    @app.post("/api/runs/stream")
+    def stream_run(request: RunRequest) -> StreamingResponse:
+        validate_run_sources(state, request.sources)
+
+        provider = request.provider.lower()
+        llm = build_llm(provider)
+        harness = AgentHarness(llm=llm, store=state.store)
+        run_id = uuid.uuid4().hex
+        started_at = time.perf_counter()
+        model = getattr(llm, "model", "unknown")
+
+        def event_stream() -> Iterator[str]:
+            try:
+                for event in harness.stream(request.question):
+                    payload: dict[str, Any] = {
+                        **event,
+                        "run_id": run_id,
+                        "provider": provider,
+                        "model": model,
+                    }
+                    if event["event"] in {"run_finished", "error"}:
+                        latency_ms = int((time.perf_counter() - started_at) * 1000)
+                        response = build_run_response(
+                            run_id=run_id,
+                            completed=bool(event.get("completed", False)),
+                            provider=provider,
+                            model=model,
+                            question=request.question,
+                            answer=str(event.get("answer") or event.get("error") or "Run failed."),
+                            plan=event.get("plan") or harness.current_plan,
+                            entries=harness.trace.entries,
+                            latency_ms=latency_ms,
+                        )
+                        state.runs[run_id] = response
+                        payload["latency_ms"] = latency_ms
+                        payload["run"] = response.model_dump(mode="json")
+                    yield dump_ndjson(payload)
+            except Exception as exc:
+                latency_ms = int((time.perf_counter() - started_at) * 1000)
+                response = build_run_response(
+                    run_id=run_id,
+                    completed=False,
+                    provider=provider,
+                    model=model,
+                    question=request.question,
+                    answer=str(exc),
+                    plan=harness.current_plan,
+                    entries=harness.trace.entries,
+                    latency_ms=latency_ms,
+                )
+                state.runs[run_id] = response
+                yield dump_ndjson(
+                    {
+                        "event": "error",
+                        "run_id": run_id,
+                        "provider": provider,
+                        "model": model,
+                        "status": "error",
+                        "error": str(exc),
+                        "latency_ms": latency_ms,
+                        "run": response.model_dump(mode="json"),
+                    }
+                )
+
+        return StreamingResponse(event_stream(), media_type="application/x-ndjson")
 
     @app.get("/api/runs/{run_id}", response_model=RunResponse)
     def get_run(run_id: str) -> RunResponse:
@@ -236,6 +296,42 @@ def build_llm(provider: str) -> MockLLM | OpenRouterLLM:
     if provider == "openrouter":
         return OpenRouterLLM()
     raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
+
+
+def validate_run_sources(state: WorkbenchState, requested_sources: list[str]) -> None:
+    sources = requested_sources or sorted(state.store.allowed_tables)
+    if not sources:
+        raise HTTPException(status_code=400, detail="Upload or load at least one CSV source.")
+    missing = sorted(set(sources) - state.store.allowed_tables)
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Unknown source(s): {missing}")
+
+
+def build_run_response(
+    *,
+    run_id: str,
+    completed: bool,
+    provider: str,
+    model: str,
+    question: str,
+    answer: str,
+    plan: list[str],
+    entries: list[TraceEntry],
+    latency_ms: int,
+) -> RunResponse:
+    return RunResponse(
+        run_id=run_id,
+        completed=completed,
+        provider=provider,
+        model=model,
+        question=question,
+        answer=answer,
+        plan=plan,
+        trace=[trace_entry_to_response(entry) for entry in entries],
+        result_tables=result_tables_from_trace(entries),
+        generated_sql=[entry.executed_sql for entry in entries if entry.executed_sql],
+        latency_ms=latency_ms,
+    )
 
 
 def trace_entry_to_response(entry: TraceEntry) -> TraceStepResponse:
@@ -269,6 +365,10 @@ def result_tables_from_trace(entries: list[TraceEntry]) -> list[ResultTable]:
             )
         )
     return tables
+
+
+def dump_ndjson(payload: dict[str, Any]) -> str:
+    return json.dumps(payload, ensure_ascii=False, default=str) + "\n"
 
 
 app = create_app()
