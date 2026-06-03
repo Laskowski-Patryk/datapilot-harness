@@ -1,17 +1,17 @@
 # datapilot-harness
 
-`datapilot-harness` is a compact Codex-style data agent for CSV and SQL analysis. It plans, chooses typed actions, executes safe DuckDB queries, records observations, and produces grounded final answers.
+`datapilot-harness` is a compact Codex-style data agent for CSV and SQL analysis. It plans the analysis, chooses typed actions, executes safe DuckDB queries, records observations, and returns grounded final answers through both a CLI and a polished web workbench.
 
-The project now has two modes:
+The project has two modes:
 
 - CLI mode for inspecting the core agent harness from a terminal.
-- Web UI mode for a screenshot-friendly DataPilot Workbench with sources, generated SQL, result tables, and an observable agent trace.
+- Web UI mode for DataPilot Workbench, a React interface with sources, generated SQL, result tables, and an observable agent trace.
 
 ## Product Positioning
 
-DataPilot Harness is a Codex-style data agent for CSV/SQL analysis with typed actions, safe DuckDB execution, and observable traces.
+DataPilot Harness is a portfolio-ready demo of practical agent engineering: typed actions, safe SQL execution, traceable reasoning steps, and a frontend that makes each run inspectable.
 
-It is designed as a portfolio-grade demo of agent engineering without LangChain, LlamaIndex, LangGraph, embeddings, vector databases, auth, or multi-user persistence.
+The stack is intentionally small and explicit. It avoids LangChain, LlamaIndex, LangGraph, embeddings, vector databases, auth, and multi-user persistence so the core harness, validation, and trace flow stay easy to review.
 
 ## Quick Start
 
@@ -126,13 +126,9 @@ If the API is unavailable, the frontend loads `frontend/src/demo/staticRun.ts` s
 
 ## Screenshots
 
-Design concept:
+Desktop workbench:
 
-![DataPilot Workbench concept](docs/assets/datapilot-workbench-concept.png)
-
-Rendered workbench screenshot:
-
-![DataPilot Workbench screenshot](docs/assets/datapilot-workbench-screenshot.png)
+![DataPilot Workbench desktop screenshot](docs/assets/datapilot-workbench-screenshot.png)
 
 ## Architecture
 
